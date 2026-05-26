@@ -102,7 +102,19 @@ export function InstructorSection() {
                 initial="enter"
                 animate="center"
                 exit="exit"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.5}
+                onDragEnd={(e, info) => {
+                  const swipeThreshold = 50
+                  if (info.offset.x < -swipeThreshold) {
+                    next()
+                  } else if (info.offset.x > swipeThreshold) {
+                    prev()
+                  }
+                }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="cursor-grab active:cursor-grabbing w-full h-full select-none"
               >
                 <div className="border border-red-600/20 rounded-xl bg-black/60 p-8 md:p-12 hover:border-red-600/50 transition-all">
                   {/* Photo */}

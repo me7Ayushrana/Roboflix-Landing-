@@ -47,6 +47,10 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Instrument+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        {/* Android and Mobile browser optimizations */}
+        <meta name="theme-color" content="#070707" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${manrope.variable} font-sans antialiased bg-black text-white`}>
         <LenisProvider>{children}</LenisProvider>

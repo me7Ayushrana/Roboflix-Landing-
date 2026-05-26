@@ -83,16 +83,27 @@ export function SeasonCarouselSection() {
               initial="enter"
               animate="center"
               exit="exit"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.6}
+              onDragEnd={(e, info) => {
+                const swipeThreshold = 50
+                if (info.offset.x < -swipeThreshold) {
+                  paginate(1)
+                } else if (info.offset.x > swipeThreshold) {
+                  paginate(-1)
+                }
+              }}
               transition={{
                 x: { type: 'spring', stiffness: 300, damping: 30 },
                 opacity: { duration: 0.5 },
               }}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
             >
               <img
                 src={currentSeason.image}
                 alt={currentSeason.title}
-                className="w-full h-full object-contain bg-black"
+                className="w-full h-full object-contain bg-black select-none pointer-events-none"
               />
             </motion.div>
           </AnimatePresence>
