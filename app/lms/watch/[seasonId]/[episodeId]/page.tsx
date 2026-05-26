@@ -483,25 +483,25 @@ export default function VideoPlayerPage() {
                 />
               </div>
 
-              {/* Premium Top Header Overlay - Slides down on hover to cover native YouTube titles and share button */}
+              {/* Premium Top Floating Header Dock - Slides down on hover to cover native YouTube titles */}
               <div 
-                className={`absolute top-0 left-0 right-0 p-5 bg-gradient-to-b from-black/95 via-black/60 to-transparent flex items-center justify-between transition-all duration-300 z-30 select-none ${
-                  showControls ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+                className={`absolute top-4 left-4 right-4 px-5 py-3.5 bg-black/80 backdrop-blur-md border border-white/5 rounded-xl flex items-center justify-between transition-all duration-300 z-30 select-none shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] ${
+                  showControls ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-                  <span className="text-xs font-semibold tracking-wider text-gray-200 uppercase truncate max-w-[280px]">
+                <div className="flex items-center gap-3">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shadow-[0_0_8px_#dc2626]" />
+                  <span className="text-xs font-bold tracking-wider text-gray-200 uppercase truncate max-w-[280px]">
                     {episode.title}
                   </span>
                 </div>
-                <div className="px-3 py-1 bg-red-950/20 border border-red-500/30 rounded-full text-[10px] font-bold tracking-widest text-red-500 uppercase">
+                <div className="px-3.5 py-1.5 bg-red-950/30 border border-red-500/40 rounded-full text-[10px] font-bold tracking-widest text-red-500 uppercase shadow-[0_0_12px_rgba(239,68,68,0.15)]">
                   ROBOFLIX CORE
                 </div>
               </div>
 
-              {/* Permanent Premium Watermark Pill - Completely covers the native YouTube logo with a high-end streaming indicator */}
-              <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/85 backdrop-blur-md border border-red-950/50 rounded-full text-[10px] font-semibold tracking-wider text-red-500 select-none pointer-events-none z-20 shadow-lg flex items-center gap-1.5">
+              {/* Permanent Premium Watermark Pill - Floating perfectly above the bottom control dock, covering the native YouTube logo */}
+              <div className="absolute bottom-[92px] right-6 px-3 py-1.5 bg-black/90 backdrop-blur-md border border-red-950/50 rounded-full text-[10px] font-semibold tracking-wider text-red-500 select-none pointer-events-none z-20 shadow-2xl flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
                 ROBOFLIX PRO
               </div>
@@ -527,27 +527,27 @@ export default function VideoPlayerPage() {
                 </div>
               )}
 
-              {/* Custom Glassmorphic Controls overlay - high z-index (z-30) to capture click actions */}
+              {/* Custom Widescreen Floating Control Dock - high z-index (z-30) to capture click actions */}
               <div 
-                className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col gap-3 transition-all duration-300 z-30 ${
-                  showControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+                className={`absolute bottom-4 left-4 right-4 p-4 bg-black/80 backdrop-blur-md border border-white/5 rounded-xl flex flex-col gap-3.5 transition-all duration-300 z-30 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] ${
+                  showControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
                 }`}
               >
                 {/* Progress Bar (Timeline Seek) */}
-                <div className="flex items-center gap-3 w-full">
-                  <span className="text-xs font-mono text-gray-300 select-none">{formatTime(currentTime)}</span>
+                <div className="flex items-center gap-3.5 w-full">
+                  <span className="text-xs font-semibold font-mono text-gray-400 select-none">{formatTime(currentTime)}</span>
                   <input
                     type="range"
                     min={0}
                     max={duration || 100}
                     value={currentTime}
                     onChange={handleSeek}
-                    className="flex-1 h-1.5 bg-gray-700/50 rounded-lg appearance-none cursor-pointer accent-red-600 outline-none focus:ring-1 focus:ring-red-600"
+                    className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-red-600 outline-none focus:ring-1 focus:ring-red-600/50 hover:h-2 transition-all"
                     style={{
-                      background: `linear-gradient(to right, #dc2626 0%, #dc2626 ${(currentTime / (duration || 1)) * 100}%, rgba(55, 65, 81, 0.5) ${(currentTime / (duration || 1)) * 100}%, rgba(55, 65, 81, 0.5) 100%)`
+                      background: `linear-gradient(to right, #dc2626 0%, #dc2626 ${(currentTime / (duration || 1)) * 100}%, rgba(255, 255, 255, 0.1) ${(currentTime / (duration || 1)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`
                     }}
                   />
-                  <span className="text-xs font-mono text-gray-300 select-none">{formatTime(duration)}</span>
+                  <span className="text-xs font-semibold font-mono text-gray-400 select-none">{formatTime(duration)}</span>
                 </div>
 
                 {/* Buttons Container */}
@@ -557,16 +557,16 @@ export default function VideoPlayerPage() {
                     {/* Play/Pause Button */}
                     <button
                       onClick={togglePlay}
-                      className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full hover:text-red-500 text-white transition-all active:scale-95"
+                      className="p-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg shadow-red-600/35 hover:scale-105 active:scale-95 transition-all"
                       title={isPlaying ? "Pause" : "Play"}
                     >
-                      {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
+                      {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
                     </button>
 
                     {/* Skip Back 10s */}
                     <button
                       onClick={skipBackward}
-                      className="p-1.5 hover:text-red-500 text-gray-300 transition-colors"
+                      className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-300 transition-all hover:scale-105 active:scale-95"
                       title="Skip Backward 10s"
                     >
                       <RotateCcw className="w-4 h-4" />
@@ -575,7 +575,7 @@ export default function VideoPlayerPage() {
                     {/* Skip Forward 10s */}
                     <button
                       onClick={skipForward}
-                      className="p-1.5 hover:text-red-500 text-gray-300 transition-colors"
+                      className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-300 transition-all hover:scale-105 active:scale-95"
                       title="Skip Forward 10s"
                     >
                       <RotateCw className="w-4 h-4" />
@@ -585,10 +585,10 @@ export default function VideoPlayerPage() {
                     <div className="flex items-center gap-2 group/volume">
                       <button
                         onClick={toggleMute}
-                        className="p-1.5 hover:text-red-500 text-gray-300 transition-colors"
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-300 transition-all"
                         title={isMuted ? "Unmute" : "Mute"}
                       >
-                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                        {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                       </button>
                       <input
                         type="range"
@@ -596,7 +596,7 @@ export default function VideoPlayerPage() {
                         max={100}
                         value={isMuted ? 0 : volume}
                         onChange={handleVolumeChange}
-                        className="w-0 group-hover/volume:w-20 transition-all duration-300 origin-left scale-x-0 group-hover/volume:scale-x-100 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-600 outline-none"
+                        className="w-0 group-hover/volume:w-20 transition-all duration-300 origin-left scale-x-0 group-hover/volume:scale-x-100 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-red-600 outline-none"
                       />
                     </div>
                   </div>
@@ -610,25 +610,26 @@ export default function VideoPlayerPage() {
                           setShowSpeedMenu(!showSpeedMenu)
                           setShowQualityMenu(false)
                         }}
-                        className="p-1.5 hover:text-red-500 text-gray-300 transition-colors flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider"
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-350 transition-all flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase"
                         title="Playback Speed"
                       >
-                        <Gauge className="w-4 h-4" />
-                        <span>{playbackSpeed === 1 ? "Normal" : `${playbackSpeed}x`}</span>
+                        <Gauge className="w-3.5 h-3.5" />
+                        <span>{playbackSpeed === 1 ? "1.0x" : `${playbackSpeed}x`}</span>
                       </button>
 
                       {/* Speed Selection Dropdown */}
                       {showSpeedMenu && (
-                        <div className="absolute bottom-10 right-0 p-2 bg-gray-900/95 border border-gray-800 rounded-lg shadow-xl flex flex-col gap-1 z-20 min-w-[100px] backdrop-blur-md">
+                        <div className="absolute bottom-12 right-0 p-2 bg-black/90 border border-white/5 rounded-xl shadow-2xl flex flex-col gap-1 z-20 min-w-[110px] backdrop-blur-lg animate-fade-in">
                           {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
                             <button
                               key={speed}
                               onClick={() => changeSpeed(speed)}
-                              className={`px-3 py-1 text-left text-xs font-semibold rounded hover:bg-red-600 hover:text-white transition-colors ${
+                              className={`px-3 py-1.5 text-left text-xs font-semibold rounded-lg hover:bg-red-650 hover:text-white transition-all flex items-center justify-between ${
                                 playbackSpeed === speed ? "text-red-500 bg-red-600/10" : "text-gray-300"
                               }`}
                             >
-                              {speed === 1 ? "Normal" : `${speed}x`}
+                              <span>{speed === 1 ? "Normal" : `${speed}x`}</span>
+                              {playbackSpeed === speed && <span className="w-1 h-1 rounded-full bg-red-600 animate-ping" />}
                             </button>
                           ))}
                         </div>
@@ -642,16 +643,16 @@ export default function VideoPlayerPage() {
                           setShowQualityMenu(!showQualityMenu)
                           setShowSpeedMenu(false)
                         }}
-                        className="p-1.5 hover:text-red-500 text-gray-300 transition-colors flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider"
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-355 transition-all flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase"
                         title="Video Quality"
                       >
-                        <Settings className="w-4 h-4" />
+                        <Settings className="w-3.5 h-3.5" />
                         <span>{getQualityName(playbackQuality)}</span>
                       </button>
 
                       {/* Quality Selection Dropdown */}
                       {showQualityMenu && (
-                        <div className="absolute bottom-10 right-0 p-2 bg-gray-900/95 border border-gray-800 rounded-lg shadow-xl flex flex-col gap-1 z-20 min-w-[100px] backdrop-blur-md">
+                        <div className="absolute bottom-12 right-0 p-2 bg-black/90 border border-white/5 rounded-xl shadow-2xl flex flex-col gap-1 z-20 min-w-[110px] backdrop-blur-lg animate-fade-in">
                           {[
                             { label: "Auto", value: "default" },
                             { label: "1080p", value: "hd1080" },
@@ -662,11 +663,12 @@ export default function VideoPlayerPage() {
                             <button
                               key={opt.value}
                               onClick={() => changeQuality(opt.value)}
-                              className={`px-3 py-1 text-left text-xs font-semibold rounded hover:bg-red-600 hover:text-white transition-colors ${
+                              className={`px-3 py-1.5 text-left text-xs font-semibold rounded-lg hover:bg-red-650 hover:text-white transition-all flex items-center justify-between ${
                                 playbackQuality === opt.value ? "text-red-500 bg-red-600/10" : "text-gray-300"
                               }`}
                             >
-                              {opt.label}
+                              <span>{opt.label}</span>
+                              {playbackQuality === opt.value && <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />}
                             </button>
                           ))}
                         </div>
@@ -676,10 +678,10 @@ export default function VideoPlayerPage() {
                     {/* Fullscreen Button */}
                     <button
                       onClick={handleFullscreen}
-                      className="p-1.5 hover:text-red-500 text-gray-300 transition-colors"
+                      className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-300 transition-all hover:scale-105 active:scale-95"
                       title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                     >
-                      {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                      {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
