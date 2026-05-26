@@ -407,16 +407,22 @@ export default function VideoPlayerPage() {
               ref={containerRef}
               className="relative w-full bg-black rounded-lg overflow-hidden group aspect-video border border-gray-800/80 shadow-2xl"
             >
-              {/* YouTube Iframe - 110% dimensions with pointer-events-none to fully prevent native hover events and completely push headers/watermarks off-screen */}
+              {/* YouTube Iframe - 100% dimensions to fit the entire video screen perfectly with zero cropping, using absolute pointer isolation */}
               <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
                 <iframe
                   id="roboflix-player-iframe"
                   src={getYouTubeEmbedUrl()}
                   title={episode.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  className="w-[110%] h-[110%] border-0 absolute top-[-5%] left-[-5%] pointer-events-none"
+                  className="w-full h-full border-0 absolute top-0 left-0 pointer-events-none"
                 />
               </div>
+
+              {/* Solid black cinematic bar to cover the native YouTube title/share header completely */}
+              <div className="absolute top-0 left-0 right-0 h-10 bg-black z-20 pointer-events-none" />
+
+              {/* Solid black cinematic bar to cover the native YouTube logo, share button, and "More videos" button completely */}
+              <div className="absolute bottom-0 left-0 right-0 h-10 bg-black z-20 pointer-events-none" />
 
               {/* Clickable Overlay - Single click to toggle Play/Pause, Double click to toggle Fullscreen */}
               <div 
@@ -442,8 +448,8 @@ export default function VideoPlayerPage() {
                 </div>
               )}
 
-              {/* Permanent Premium Watermark - Completely covers the native YouTube watermark logo in the bottom right */}
-              <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/80 backdrop-blur-md border border-gray-800/80 rounded-lg text-[10px] font-bold tracking-widest text-gray-400 select-none pointer-events-none z-20 shadow-lg flex items-center gap-1.5">
+              {/* Permanent Premium Watermark - Positioned perfectly above the cinematic bottom bar */}
+              <div className="absolute bottom-12 right-4 px-3 py-1.5 bg-black/80 backdrop-blur-md border border-gray-800/80 rounded-lg text-[10px] font-bold tracking-widest text-gray-400 select-none pointer-events-none z-20 shadow-lg flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                 ROBOFLIX LMS PLAYER
               </div>
