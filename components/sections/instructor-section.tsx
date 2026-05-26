@@ -11,6 +11,7 @@ const instructors = [
     role: "Founder, XAIR AI Robotics · Embedded Systems Engineer",
     photo: "/founder-ishinder.jpg",
     alt: "Ishinder Singh - Founder XAIR AI Robotics",
+    linkedin: "https://www.linkedin.com/in/ishinder-singh-0707b5355/?skipRedirect=true",
     bio: [
       "I didn't learn robotics in a classroom. I learned it by breaking things, debugging at 2am, and figuring out why my servo wasn't responding at 3am.",
       <>I run active R&D projects for real clients — hotels, defence, industrial automation. <span className="text-white font-semibold">The robots here are not demo projects. They are real machines built for real deployments.</span></>,
@@ -24,6 +25,7 @@ const instructors = [
     role: "Founder @Ethereal-Nexus · Co-Founder @Roboflix · IoT & Robotics Engineer · Full-Stack Dev",
     photo: "/founder-ayush.jpg",
     alt: "Ayush Rana - Co-Founder Roboflix",
+    linkedin: "https://www.linkedin.com/in/ayushrana-iot",
     bio: [
       <>I don&apos;t just study technology — <span className="text-white font-semibold">I ship it.</span></>,
       "While most students are learning frameworks in theory, I've built and deployed some production tools used by real people.",
@@ -115,9 +117,31 @@ export function InstructorSection() {
                   </div>
 
                   {/* Name & Role */}
-                  <div className="text-center mb-8">
+                  <div className="text-center mb-8 flex flex-col items-center">
                     <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">{instructor.name}</h3>
-                    <p className="text-red-600 font-semibold text-base md:text-lg leading-snug">{instructor.role}</p>
+                    <p className="text-red-600 font-semibold text-base md:text-lg leading-snug mb-4">{instructor.role}</p>
+                    {instructor.linkedin && (
+                      <a
+                        href={instructor.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:bg-[#0077b5]/20 hover:border-[#0077b5]/50 hover:text-white transition-all text-xs md:text-sm font-semibold group shadow-xl"
+                      >
+                        <svg
+                          className="w-4 h-4 transition-transform group-hover:scale-110 text-[#0077b5] group-hover:text-white"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        LinkedIn Profile
+                      </a>
+                    )}
                   </div>
 
                   {/* Bio */}
