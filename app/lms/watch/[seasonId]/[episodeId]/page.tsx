@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Menu, X, MessageCircle, Play, Pause, RotateCcw, RotateCw, Volume2, VolumeX, Maximize, Minimize, Gauge, Settings } from "lucide-react"
+import { ArrowLeft, Menu, X, MessageCircle, Play, Pause, RotateCcw, RotateCw, Volume2, VolumeX, Maximize, Minimize, Gauge, Settings, ExternalLink } from "lucide-react"
 import { SEASONS_DATA } from "@/lib/lms-data"
 import { supabase, isSupabaseConfigured } from "@/lib/supabase"
 
@@ -1001,19 +1001,29 @@ export default function VideoPlayerPage() {
             <div className="mb-8">
               <h2 className="text-xl font-bold text-white mb-4">Resources & Files</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {episode.files.map((file, idx) => (
-                  <div
+                {(episode.files as any[]).map((file, idx) => (
+                  <a
                     key={idx}
-                    className="p-4 bg-gray-900 border border-gray-800 hover:border-red-600 rounded-lg transition-colors flex items-center gap-3 cursor-pointer hover:bg-gray-800"
+                    href={file.url || "https://drive.google.com"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-4 bg-gray-900/60 border border-gray-800 hover:border-red-600/60 rounded-xl transition-all flex items-center justify-between gap-3 group hover:bg-red-950/20 hover:shadow-[0_0_15px_rgba(220,38,38,0.1)] text-left"
                   >
-                    <div className="w-10 h-10 bg-red-600/20 rounded flex items-center justify-center flex-shrink-0">
-                      <span className="text-red-500 text-sm font-bold">📄</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 bg-red-600/10 group-hover:bg-red-600/20 border border-red-500/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                        <span className="text-red-500 text-sm font-bold">📄</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white font-semibold text-sm truncate group-hover:text-red-400 transition-colors">{file.name}</p>
+                        <p className="text-gray-500 text-xs mt-0.5">{file.type}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">{file.name}</p>
-                      <p className="text-gray-500 text-xs">{file.type}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-black/40 border border-white/5 text-gray-400 group-hover:text-red-400 group-hover:border-red-500/20 transition-all flex items-center gap-1">
+                        Drive <ExternalLink className="w-2.5 h-2.5" />
+                      </span>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>

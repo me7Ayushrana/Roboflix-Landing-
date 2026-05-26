@@ -14,6 +14,7 @@ interface User {
 interface FileItem {
   name: string
   type: string
+  url?: string
 }
 
 interface CodeSnippet {
@@ -66,6 +67,7 @@ export default function LmsAdminPanel() {
   // File/Code helper form states
   const [newFileName, setNewFileName] = useState("")
   const [newFileType, setNewFileType] = useState("Code")
+  const [newFileUrl, setNewFileUrl] = useState("")
   const [newCodeLang, setNewCodeLang] = useState("Arduino")
   const [newCodeSnippet, setNewCodeSnippet] = useState("")
 
@@ -170,10 +172,18 @@ export default function LmsAdminPanel() {
 
   // ─── Actions ───────────────────────────────────────────────────
   const addFile = () => {
-    if (!newFileName.trim()) return
-    setEpFiles(prev => [...prev, { name: newFileName.trim(), type: newFileType }])
+    if (!newFileName.trim()) {
+      alert("Resource Name is required")
+      return
+    }
+    if (!newFileUrl.trim()) {
+      alert("Google Drive Link is required")
+      return
+    }
+    setEpFiles(prev => [...prev, { name: newFileName.trim(), type: newFileType, url: newFileUrl.trim() }])
     setNewFileName("")
-    showToast("File attachment added")
+    setNewFileUrl("")
+    showToast("Resource link added successfully")
   }
 
   const removeFile = (index: number) => {
@@ -535,60 +545,92 @@ export default function LmsAdminPanel() {
 
               {/* Files Upload Attachment Option */}
               <div className="space-y-4">
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">Resource File Attachments</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">Resource File Attachments (Google Drive Links)</label>
                 
                 {/* Form fields to add new */}
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-[#111] border border-gray-800 p-4 rounded-xl items-end">
-                  <div className="sm:col-span-6">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">File Name</label>
-                    <input
-                      type="text"
-                      value={newFileName}
-                      onChange={(e) => setNewFileName(e.target.value)}
-                      placeholder="e.g. starter_circuit.ino"
-                      className="w-full bg-black border border-gray-800 rounded-lg px-3 py-2 text-xs focus:border-red-600 outline-none"
-                    />
+                <div className="bg-[#111] border border-gray-800 p-4 rounded-xl space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">Resource Name</label>
+                      <input
+                        type="text"
+                        value={newFileName}
+                        onChange={(e) => setNewFileName(e.target.value)}
+                        placeholder="e.g. Starter Arduino Sketch"
+                        className="w-full bg-black border border-gray-800 rounded-lg px-3 py-2 text-xs focus:border-red-600 outline-none text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">Type Category</label>
+                      <select
+                        value={newFileType}
+                        onChange={(e) => setNewFileType(e.target.value)}
+                        className="w-full bg-black border border-gray-800 rounded-lg px-3 py-2 text-xs focus:border-red-600 outline-none text-white"
+                      >
+                        <option value="Code">Code</option>
+                        <option value="Guide">Guide</option>
+                        <option value="Bill of Materials">Bill of Materials</option>
+                        <option value="Other">Other File</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="sm:col-span-4">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Type Category</label>
-                    <select
-                      value={newFileType}
-                      onChange={(e) => setNewFileType(e.target.value)}
-                      className="w-full bg-black border border-gray-800 rounded-lg px-3 py-2 text-xs focus:border-red-600 outline-none text-white"
-                    >
-                      <option value="Code">Code</option>
-                      <option value="Guide">Guide</option>
-                      <option value="Bill of Materials">Bill of Materials</option>
-                      <option value="Other">Other File</option>
-                    </select>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <button
-                      type="button"
-                      onClick={addFile}
-                      className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase rounded-lg transition-colors h-[34px]"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add</span>
-                    </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                    <div className="sm:col-span-10">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">Google Drive Link / URL (Required)</label>
+                      <input
+                        type="text"
+                        value={newFileUrl}
+                        onChange={(e) => setNewFileUrl(e.target.value)}
+                        placeholder="e.g. https://drive.google.com/file/d/.../view"
+                        className="w-full bg-black border border-gray-800 rounded-lg px-3 py-2 text-xs focus:border-red-600 outline-none text-white placeholder:text-gray-700"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <button
+                        type="button"
+                        onClick={addFile}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase rounded-lg transition-colors h-[34px] shadow-md shadow-red-600/10 active:scale-[0.98]"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Rendered files list */}
                 <div className="space-y-2">
                   {epFiles.length === 0 ? (
-                    <p className="text-xs text-gray-500 italic p-2 border border-dashed border-gray-800 rounded-lg text-center">No reference files uploaded</p>
+                    <p className="text-xs text-gray-500 italic p-2 border border-dashed border-gray-800 rounded-lg text-center">No reference links configured</p>
                   ) : (
                     epFiles.map((file, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl text-xs">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-red-500" />
-                          <span className="font-semibold text-gray-200">{file.name}</span>
-                          <span className="text-[10px] uppercase font-mono bg-black/40 px-1.5 py-0.5 rounded border border-white/5 text-gray-500">{file.type}</span>
+                      <div key={idx} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl text-xs font-sans">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileText className="w-4 h-4 text-red-500 shrink-0" />
+                          <div className="min-w-0 text-left">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-gray-200 truncate">{file.name}</span>
+                              <span className="text-[9px] uppercase font-mono bg-red-600/10 text-red-400 px-1.5 py-0.5 rounded border border-red-500/10 shrink-0">{file.type}</span>
+                            </div>
+                            {file.url && (
+                              <p className="text-gray-550 text-[10px] truncate mt-0.5 font-mono flex items-center gap-1">
+                                <span className="text-gray-600">GDrive:</span>
+                                <a
+                                  href={file.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-red-500/80 hover:text-red-400 hover:underline inline-flex items-center gap-0.5 truncate max-w-[200px] sm:max-w-[300px]"
+                                >
+                                  {file.url}
+                                  <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <button
                           onClick={() => removeFile(idx)}
-                          className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                          className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-white/5 transition-colors shrink-0 ml-2"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
