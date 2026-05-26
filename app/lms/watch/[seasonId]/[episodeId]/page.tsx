@@ -407,31 +407,37 @@ export default function VideoPlayerPage() {
               ref={containerRef}
               className="relative w-full bg-black rounded-lg overflow-hidden group aspect-video border border-gray-800/80 shadow-2xl"
             >
-              {/* YouTube Iframe - scaled to cut off branding border and pointer-events-none to prevent direct YouTube redirection */}
-              <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none scale-110">
+              {/* YouTube Iframe - shifted and expanded to 135% width and height to crop out all branding, title bars, and watermark overlays */}
+              <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
                 <iframe
                   id="roboflix-player-iframe"
                   src={getYouTubeEmbedUrl()}
                   title={episode.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  className="w-full h-full border-0 absolute top-0 left-0"
+                  className="w-[135%] h-[135%] border-0 absolute -top-[17.5%] -left-[17.5%]"
                 />
               </div>
 
-              {/* Big play overlay that shows on hover if paused */}
+              {/* Clickable Overlay - Single click to toggle Play/Pause, Double click to toggle Fullscreen */}
+              <div 
+                onClick={togglePlay}
+                onDoubleClick={handleFullscreen}
+                className="absolute inset-0 cursor-pointer z-10"
+              />
+
+              {/* Big play overlay that shows on hover if paused - pointer-events-none so it doesn't block the clickable overlay */}
               {!isPlaying && player && (
                 <div 
-                  onClick={togglePlay}
-                  className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer transition-colors duration-300 z-10"
+                  className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none transition-colors duration-300 z-20 animate-fade-in"
                 >
-                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg hover:bg-red-700 hover:scale-105 active:scale-95 transition-all">
+                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all">
                     <Play className="w-8 h-8 fill-current text-white ml-1" />
                   </div>
                 </div>
               )}
 
-              {/* Custom Glassmorphic Controls overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col gap-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 z-10">
+              {/* Custom Glassmorphic Controls overlay - high z-index (z-30) to capture click actions */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col gap-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 z-30">
                 {/* Progress Bar (Timeline Seek) */}
                 <div className="flex items-center gap-3 w-full">
                   <span className="text-xs font-mono text-gray-300 select-none">{formatTime(currentTime)}</span>
