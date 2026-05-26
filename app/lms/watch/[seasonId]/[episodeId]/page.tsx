@@ -407,14 +407,14 @@ export default function VideoPlayerPage() {
               ref={containerRef}
               className="relative w-full bg-black rounded-lg overflow-hidden group aspect-video border border-gray-800/80 shadow-2xl"
             >
-              {/* YouTube Iframe - 100% dimensions to fit the entire video perfectly without cropping any lecture content, with pointer-events-none to prevent direct native redirects */}
+              {/* YouTube Iframe - 104% dimensions to hide native edges/headers safely without cropping slide content, with pointer-events-none to prevent direct native redirects */}
               <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
                 <iframe
                   id="roboflix-player-iframe"
                   src={getYouTubeEmbedUrl()}
                   title={episode.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  className="w-full h-full border-0 absolute top-0 left-0"
+                  className="w-[104%] h-[104%] border-0 absolute top-[-2%] left-[-2%]"
                 />
               </div>
 
@@ -425,16 +425,28 @@ export default function VideoPlayerPage() {
                 className="absolute inset-0 cursor-pointer z-10"
               />
 
-              {/* Big play overlay that shows on hover if paused - pointer-events-none so it doesn't block the clickable overlay */}
-              {!isPlaying && player && (
+              {/* Premium Pause/Load Overlay - Darkens and blurs the YouTube native pause elements (More videos, share, etc.) */}
+              {!isPlaying && (
                 <div 
-                  className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none transition-colors duration-300 z-20 animate-fade-in"
+                  className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 backdrop-blur-md pointer-events-none transition-all duration-300 z-20 animate-fade-in"
                 >
-                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all">
-                    <Play className="w-8 h-8 fill-current text-white ml-1" />
+                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 transition-all mb-4">
+                    <Play className="w-8 h-8 fill-current text-white ml-1 animate-pulse" />
                   </div>
+                  <span className="text-sm font-semibold tracking-widest text-gray-300 uppercase select-none">
+                    Click to Resume Lecture
+                  </span>
+                  <span className="text-[10px] text-gray-500 tracking-wider mt-1 select-none">
+                    ROBOFLIX PREMIUM PLATFORM
+                  </span>
                 </div>
               )}
+
+              {/* Permanent Premium Watermark - Completely covers the native YouTube watermark logo in the bottom right */}
+              <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/80 backdrop-blur-md border border-gray-800/80 rounded-lg text-[10px] font-bold tracking-widest text-gray-400 select-none pointer-events-none z-20 shadow-lg flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+                ROBOFLIX LMS PLAYER
+              </div>
 
               {/* Custom Glassmorphic Controls overlay - high z-index (z-30) to capture click actions */}
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col gap-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 z-30">
