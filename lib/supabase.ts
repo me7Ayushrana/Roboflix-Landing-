@@ -11,8 +11,10 @@ export const isSupabaseConfigured = (): boolean => {
   return (
     supabaseUrl.length > 0 && 
     supabaseUrl !== "https://placeholder-url.supabase.co" &&
+    !supabaseUrl.includes("your-supabase-project") &&
     supabaseAnonKey.length > 0 && 
-    supabaseAnonKey !== "placeholder-anon-key"
+    supabaseAnonKey !== "placeholder-anon-key" &&
+    !supabaseAnonKey.includes("your-supabase-anon-key")
   )
 }
 
