@@ -39,9 +39,9 @@ export const SEASONS_DATA = [
       {
         id: 3,
         title: "Episode 3: Sensor Integration",
-        description: "Integrate sensors with Arduino. Read data from ultrasonic, temperature, and motion sensors.",
+        description: "Master PID tuning algorithms and implement digital filters on Arduino hardware.",
         duration: "55 min",
-        videoUrl: "https://youtu.be/T5rmd-vKQeM?si=FFfRVj_tJ-ZlkJK6",
+        videoUrl: "https://www.youtube.com/watch?v=t3U3x_kUIbc&list=RDMMt3U3x_kUIbc&start_radio=1",
         isFree: true,
         summary: "Learn how to connect and read from various sensors, process data, and make decisions based on sensor inputs.",
         files: [],
