@@ -66,6 +66,20 @@ export default function VideoPlayerPage() {
     }, 850)
   }
 
+  // YouTube native title blocker overlay state (privacy control)
+  const [showTitleBlocker, setShowTitleBlocker] = useState(false)
+  const titleBlockerTimeoutRef = useRef<any>(null)
+
+  const triggerTitleBlocker = () => {
+    setShowTitleBlocker(true)
+    if (titleBlockerTimeoutRef.current) {
+      clearTimeout(titleBlockerTimeoutRef.current)
+    }
+    titleBlockerTimeoutRef.current = setTimeout(() => {
+      setShowTitleBlocker(false)
+    }, 3200)
+  }
+
   // 1. Session verification & login guard bypass for free/preview episodes
   useEffect(() => {
     const checkSession = async () => {
@@ -201,6 +215,7 @@ export default function VideoPlayerPage() {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current)
       }
+      setShowTitleBlocker(false)
     } else {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current)
@@ -208,6 +223,9 @@ export default function VideoPlayerPage() {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false)
       }, 2500)
+
+      // Trigger the YouTube native title blocker overlay whenever video starts/resumes playing
+      triggerTitleBlocker()
     }
 
     return () => {
@@ -259,6 +277,7 @@ export default function VideoPlayerPage() {
         player.seekTo(targetTime, true)
         showHUD("seek-percent", `Seek to ${targetPercent}%`)
         handleMouseMove()
+        triggerTitleBlocker()
         return
       }
 
@@ -416,6 +435,7 @@ export default function VideoPlayerPage() {
     const time = parseFloat(e.target.value)
     setCurrentTime(time)
     player.seekTo(time, true)
+    triggerTitleBlocker()
   }
 
   const skipForward = (seconds = 10) => {
@@ -425,6 +445,7 @@ export default function VideoPlayerPage() {
     setCurrentTime(newTime)
     player.seekTo(newTime, true)
     showHUD("seek-forward", `+${seconds}s (${formatTime(newTime)})`)
+    triggerTitleBlocker()
   }
 
   const skipBackward = (seconds = 10) => {
@@ -434,6 +455,7 @@ export default function VideoPlayerPage() {
     setCurrentTime(newTime)
     player.seekTo(newTime, true)
     showHUD("seek-backward", `-${seconds}s (${formatTime(newTime)})`)
+    triggerTitleBlocker()
   }
 
   const toggleMute = () => {
@@ -610,6 +632,19 @@ export default function VideoPlayerPage() {
                   className="w-full h-full border-0 absolute top-0 left-0 pointer-events-none"
                 />
               </div>
+
+              {/* YouTube Native Title Blocker Overlay (Privacy Control) - completely blocks native header titles at start/seeks with zero cropping */}
+              <AnimatePresence>
+                {showTitleBlocker && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black via-black/95 to-transparent pointer-events-none z-25"
+                  />
+                )}
+              </AnimatePresence>
 
               {/* Premium Top Floating Header Dock - Slides down on hover to cover native YouTube titles */}
               <div 
