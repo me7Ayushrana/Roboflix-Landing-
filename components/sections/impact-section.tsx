@@ -71,7 +71,7 @@ export function ImpactSection() {
   }
 
   return (
-    <section id="seasons" className="px-0 py-24 bg-black/40">
+    <section className="px-0 py-24 bg-black/40">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <div className="text-center mb-12">

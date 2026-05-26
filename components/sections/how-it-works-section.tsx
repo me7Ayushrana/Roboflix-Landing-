@@ -23,7 +23,7 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section className="px-6 py-24 bg-black/40">
+    <section id="how-it-works" className="px-6 py-24 bg-black/40">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

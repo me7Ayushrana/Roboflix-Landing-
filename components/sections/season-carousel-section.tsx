@@ -71,7 +71,7 @@ export function SeasonCarouselSection() {
   const currentSeason = seasons[currentIndex]
 
   return (
-    <section className="relative w-full bg-black py-8 md:py-12 overflow-hidden">
+    <section id="seasons" className="relative w-full bg-black py-8 md:py-12 overflow-hidden">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         {/* Carousel Container */}
         <div className="relative w-full aspect-video sm:aspect-auto sm:h-80 md:h-96 lg:h-[500px] rounded-xl sm:rounded-2xl overflow-hidden bg-black border border-gray-800">
