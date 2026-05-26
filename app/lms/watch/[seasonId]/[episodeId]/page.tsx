@@ -21,8 +21,22 @@ export default function VideoPlayerPage() {
   const seasonId = parseInt(params.seasonId as string)
   const episodeId = parseInt(params.episodeId as string)
   
-  const season = SEASONS_DATA.find((s) => s.id === seasonId)
+  const [seasonsData, setSeasonsData] = useState(SEASONS_DATA)
+  const season = seasonsData.find((s) => s.id === seasonId) || SEASONS_DATA.find((s) => s.id === seasonId)
   const episode = season?.episodes.find((e) => e.id === episodeId)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("roboflix_lms_seasons")
+      if (stored) {
+        try {
+          setSeasonsData(JSON.parse(stored))
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+  }, [])
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [currentTime, setCurrentTime] = useState(0)
@@ -1037,7 +1051,7 @@ export default function VideoPlayerPage() {
 
               {/* Episodes List */}
               <div className="max-h-[600px] overflow-y-auto">
-                {SEASONS_DATA.map((s) => (
+                {seasonsData.map((s) => (
                   <div key={s.id}>
                     {/* Season Header */}
                     <div className="px-4 py-3 bg-gray-800/50 text-gray-300 text-xs font-semibold uppercase border-b border-gray-700">

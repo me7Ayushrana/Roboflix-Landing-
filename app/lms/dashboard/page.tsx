@@ -15,6 +15,22 @@ export default function LmsDashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [timeLeft, setTimeLeft] = useState("")
+  const [seasonsData, setSeasonsData] = useState(SEASONS_DATA)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("roboflix_lms_seasons")
+      if (stored) {
+        try {
+          setSeasonsData(JSON.parse(stored))
+        } catch (e) {
+          console.error(e)
+        }
+      } else {
+        localStorage.setItem("roboflix_lms_seasons", JSON.stringify(SEASONS_DATA))
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -87,7 +103,7 @@ export default function LmsDashboardPage() {
     )
   }
 
-  const season1 = SEASONS_DATA[0]
+  const season1 = seasonsData[0] || SEASONS_DATA[0]
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -99,13 +115,21 @@ export default function LmsDashboardPage() {
               ROBO<span className="text-red-600">FLIX</span>
             </span>
           </Link>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-semibold transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Logout</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/lms/admin"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded text-sm font-semibold transition-colors"
+            >
+              Admin Panel
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-semibold transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -157,7 +181,7 @@ export default function LmsDashboardPage() {
         <section>
           <h2 className="text-xl sm:text-2xl font-bold mb-6">Latest Releases</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {SEASONS_DATA.map((season) => (
+            {seasonsData.map((season) => (
               <div key={season.id} className={season.id === 1 ? "cursor-pointer" : "cursor-not-allowed"}>
                 {season.id === 1 ? (
                   <Link href={`/lms/season/${season.id}`}>

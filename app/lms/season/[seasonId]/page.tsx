@@ -12,10 +12,24 @@ export default function SeasonPage() {
   const params = useParams()
   const router = useRouter()
   const seasonId = parseInt(params.seasonId as string)
-  const season = SEASONS_DATA.find((s) => s.id === seasonId)
+  const [seasonsData, setSeasonsData] = useState(SEASONS_DATA)
+  const season = seasonsData.find((s) => s.id === seasonId) || SEASONS_DATA.find((s) => s.id === seasonId)
   const [showAllEpisodes, setShowAllEpisodes] = useState(false)
   const [selectedEpisodeId, setSelectedEpisodeId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("roboflix_lms_seasons")
+      if (stored) {
+        try {
+          setSeasonsData(JSON.parse(stored))
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const checkSession = async () => {
