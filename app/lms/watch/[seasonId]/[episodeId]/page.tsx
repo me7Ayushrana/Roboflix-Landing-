@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, Menu, X, MessageCircle, Play, Pause, RotateCcw, RotateCw, Volume2, VolumeX, Maximize, Minimize, Gauge, Settings } from "lucide-react"
 import { SEASONS_DATA } from "@/lib/lms-data"
 import { supabase, isSupabaseConfigured } from "@/lib/supabase"
@@ -44,6 +44,27 @@ export default function VideoPlayerPage() {
   const [showControls, setShowControls] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<any>(null)
+
+  // HUD state for visual hotkey confirmation (Ultra-premium feature)
+  const [hud, setHud] = useState<{
+    type: "play" | "pause" | "mute" | "unmute" | "volume" | "seek-forward" | "seek-backward" | "seek-percent" | "speed" | "fullscreen" | "exit-fullscreen";
+    label: string;
+    key: number;
+  } | null>(null)
+  const hudTimeoutRef = useRef<any>(null)
+
+  const showHUD = (
+    type: "play" | "pause" | "mute" | "unmute" | "volume" | "seek-forward" | "seek-backward" | "seek-percent" | "speed" | "fullscreen" | "exit-fullscreen",
+    label: string
+  ) => {
+    if (hudTimeoutRef.current) {
+      clearTimeout(hudTimeoutRef.current)
+    }
+    setHud({ type, label, key: Date.now() })
+    hudTimeoutRef.current = setTimeout(() => {
+      setHud(null)
+    }, 850)
+  }
 
   // 1. Session verification & login guard bypass for free/preview episodes
   useEffect(() => {
@@ -214,7 +235,7 @@ export default function VideoPlayerPage() {
     }
   }
 
-  // 6. Keyboard Shortcuts Event Listener (Space to Toggle Play, Arrow Up/Down to Control Volume)
+  // 6. Keyboard Shortcuts Event Listener (Space/K to Play/Pause, F for Fullscreen, M for Mute, J/L for 10s Seeks, Arrows for 5s Seeks/Volume, 0-9 for %, Speed Hotkeys)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore keypresses if typing inside inputs/textareas
@@ -229,10 +250,64 @@ export default function VideoPlayerPage() {
 
       if (!player) return
 
+      // Handle seeking with number keys (0-9)
+      if (e.key >= "0" && e.key <= "9") {
+        e.preventDefault()
+        const targetPercent = parseInt(e.key) * 10
+        const targetTime = (parseInt(e.key) / 10) * duration
+        setCurrentTime(targetTime)
+        player.seekTo(targetTime, true)
+        showHUD("seek-percent", `Seek to ${targetPercent}%`)
+        handleMouseMove()
+        return
+      }
+
+      // Handle playback speed adjustments (< and >)
+      const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2]
+      if (e.key === ">" || (e.shiftKey && e.key === ".")) {
+        e.preventDefault()
+        const currentIndex = speeds.indexOf(playbackSpeed)
+        if (currentIndex < speeds.length - 1) {
+          changeSpeed(speeds[currentIndex + 1])
+        }
+        handleMouseMove()
+        return
+      }
+      if (e.key === "<" || (e.shiftKey && e.key === ",")) {
+        e.preventDefault()
+        const currentIndex = speeds.indexOf(playbackSpeed)
+        if (currentIndex > 0) {
+          changeSpeed(speeds[currentIndex - 1])
+        }
+        handleMouseMove()
+        return
+      }
+
       switch (e.code) {
         case "Space":
+        case "KeyK":
           e.preventDefault()
           togglePlay()
+          handleMouseMove()
+          break
+        case "KeyF":
+          e.preventDefault()
+          handleFullscreen()
+          break
+        case "KeyM":
+          e.preventDefault()
+          toggleMute()
+          handleMouseMove()
+          break
+        case "KeyJ":
+          e.preventDefault()
+          skipBackward(10)
+          handleMouseMove()
+          break
+        case "KeyL":
+          e.preventDefault()
+          skipForward(10)
+          handleMouseMove()
           break
         case "ArrowUp":
           e.preventDefault()
@@ -243,8 +318,10 @@ export default function VideoPlayerPage() {
               player.unmute()
               setIsMuted(false)
             }
+            showHUD("volume", `Volume ${nextVol}%`)
             return nextVol
           })
+          handleMouseMove()
           break
         case "ArrowDown":
           e.preventDefault()
@@ -254,15 +331,23 @@ export default function VideoPlayerPage() {
             if (nextVol === 0 && !isMuted) {
               player.mute()
               setIsMuted(true)
+              showHUD("mute", "Muted")
+            } else {
+              showHUD("volume", `Volume ${nextVol}%`)
             }
             return nextVol
           })
+          handleMouseMove()
           break
         case "ArrowRight":
-          skipForward()
+          e.preventDefault()
+          skipForward(5)
+          handleMouseMove()
           break
         case "ArrowLeft":
-          skipBackward()
+          e.preventDefault()
+          skipBackward(5)
+          handleMouseMove()
           break
         default:
           break
@@ -271,7 +356,7 @@ export default function VideoPlayerPage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [player, isPlaying, volume, isMuted, duration, currentTime])
+  }, [player, isPlaying, volume, isMuted, duration, currentTime, playbackSpeed])
 
   if (isLoading) {
     return (
@@ -318,9 +403,11 @@ export default function VideoPlayerPage() {
     if (isPlaying) {
       player.pauseVideo()
       setIsPlaying(false)
+      showHUD("pause", "Paused")
     } else {
       player.playVideo()
       setIsPlaying(true)
+      showHUD("play", "Play")
     }
   }
 
@@ -331,18 +418,22 @@ export default function VideoPlayerPage() {
     player.seekTo(time, true)
   }
 
-  const skipForward = () => {
+  const skipForward = (seconds = 10) => {
     if (!player) return
-    const newTime = Math.min(currentTime + 10, duration)
+    const current = player.getCurrentTime ? player.getCurrentTime() : currentTime
+    const newTime = Math.min(current + seconds, duration)
     setCurrentTime(newTime)
     player.seekTo(newTime, true)
+    showHUD("seek-forward", `+${seconds}s (${formatTime(newTime)})`)
   }
 
-  const skipBackward = () => {
+  const skipBackward = (seconds = 10) => {
     if (!player) return
-    const newTime = Math.max(currentTime - 10, 0)
+    const current = player.getCurrentTime ? player.getCurrentTime() : currentTime
+    const newTime = Math.max(current - seconds, 0)
     setCurrentTime(newTime)
     player.seekTo(newTime, true)
+    showHUD("seek-backward", `-${seconds}s (${formatTime(newTime)})`)
   }
 
   const toggleMute = () => {
@@ -351,9 +442,11 @@ export default function VideoPlayerPage() {
       player.unmute()
       player.setVolume(volume || 50)
       setIsMuted(false)
+      showHUD("unmute", `Volume ${volume || 50}%`)
     } else {
       player.mute()
       setIsMuted(true)
+      showHUD("mute", "Muted")
     }
   }
 
@@ -365,9 +458,11 @@ export default function VideoPlayerPage() {
     if (vol === 0) {
       player.mute()
       setIsMuted(true)
+      showHUD("mute", "Muted")
     } else {
       player.unmute()
       setIsMuted(false)
+      showHUD("volume", `Volume ${vol}%`)
     }
   }
 
@@ -376,6 +471,7 @@ export default function VideoPlayerPage() {
     setPlaybackSpeed(speed)
     player.setPlaybackRate(speed)
     setShowSpeedMenu(false)
+    showHUD("speed", `Speed ${speed}x`)
   }
 
   const changeQuality = (quality: string) => {
@@ -425,8 +521,10 @@ export default function VideoPlayerPage() {
       containerRef.current.requestFullscreen().catch((err) => {
         console.error("Error entering fullscreen:", err)
       })
+      showHUD("fullscreen", "Fullscreen")
     } else {
       document.exitFullscreen()
+      showHUD("exit-fullscreen", "Exit Fullscreen")
     }
   }
 
@@ -435,6 +533,36 @@ export default function VideoPlayerPage() {
     // controls=0 disables standard player bar, disablekb=1 disables shortcut keys
     // modestbranding=1 disables logo overlays, fs=0 disables standard fullscreen button
     return `https://www.youtube-nocookie.com/embed/${currentVideoId}?enablejsapi=1&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&autoplay=0&playsinline=1`
+  }
+
+  const renderHudIcon = () => {
+    if (!hud) return null
+    const size = "w-6 h-6"
+    switch (hud.type) {
+      case "play":
+        return <Play className={`${size} fill-current text-red-500`} />
+      case "pause":
+        return <Pause className={`${size} fill-current text-red-500`} />
+      case "mute":
+        return <VolumeX className={`${size} text-red-500`} />
+      case "unmute":
+      case "volume":
+        return <Volume2 className={`${size} text-red-500`} />
+      case "seek-forward":
+        return <RotateCw className={`${size} text-red-500`} />
+      case "seek-backward":
+        return <RotateCcw className={`${size} text-red-500`} />
+      case "seek-percent":
+        return <Settings className={`${size} text-red-500 animate-spin`} style={{ animationDuration: "3s" }} />
+      case "speed":
+        return <Gauge className={`${size} text-red-500`} />
+      case "fullscreen":
+        return <Maximize className={`${size} text-red-500`} />
+      case "exit-fullscreen":
+        return <Minimize className={`${size} text-red-500`} />
+      default:
+        return null
+    }
   }
 
   return (
@@ -527,6 +655,27 @@ export default function VideoPlayerPage() {
                 </div>
               )}
 
+              {/* Centered Premium Glassmorphic HUD Toast Notification with dynamic crimson pulse glow */}
+              <AnimatePresence>
+                {hud && (
+                  <motion.div
+                    key={hud.key}
+                    initial={{ opacity: 0, scale: 0.6, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.6, y: -20 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 22 }}
+                    className="absolute inset-0 m-auto w-32 h-32 bg-black/85 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col items-center justify-center pointer-events-none z-40 shadow-[0_12px_45px_rgba(0,0,0,0.8)] border-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.15)] animate-pulse"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 text-red-500 mb-2.5 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                      {renderHudIcon()}
+                    </div>
+                    <span className="text-[10px] font-extrabold tracking-widest text-gray-200 uppercase font-mono text-center px-2 truncate max-w-full">
+                      {hud.label}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Custom Widescreen Floating Control Dock - high z-index (z-30) to capture click actions */}
               <div 
                 className={`absolute bottom-4 left-4 right-4 p-4 bg-black/80 backdrop-blur-md border border-white/5 rounded-xl flex flex-col gap-3.5 transition-all duration-300 z-30 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] ${
@@ -565,7 +714,7 @@ export default function VideoPlayerPage() {
 
                     {/* Skip Back 10s */}
                     <button
-                      onClick={skipBackward}
+                      onClick={() => skipBackward()}
                       className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-300 transition-all hover:scale-105 active:scale-95"
                       title="Skip Backward 10s"
                     >
@@ -574,7 +723,7 @@ export default function VideoPlayerPage() {
 
                     {/* Skip Forward 10s */}
                     <button
-                      onClick={skipForward}
+                      onClick={() => skipForward()}
                       className="p-2 bg-white/5 hover:bg-white/10 rounded-full hover:text-red-500 text-gray-300 transition-all hover:scale-105 active:scale-95"
                       title="Skip Forward 10s"
                     >
