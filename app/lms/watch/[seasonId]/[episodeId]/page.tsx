@@ -690,6 +690,21 @@ export default function VideoPlayerPage() {
                 />
               </div>
 
+              {/* Four Solid Black Corner Privacy Shields (Completely hides all YouTube corner branding with 0% video cropping in the center) */}
+              <div className="absolute inset-0 pointer-events-none z-18 overflow-hidden select-none">
+                {/* Top-Left Shield: Covers channel titles & avatar */}
+                <div className="absolute top-0 left-0 w-[200px] h-[50px] bg-black" />
+                
+                {/* Top-Right Shield: Covers 'Share' and 'Watch Later' buttons */}
+                <div className="absolute top-0 right-0 w-[140px] h-[50px] bg-black" />
+                
+                {/* Bottom-Left Shield: Covers chain link sharing icon */}
+                <div className="absolute bottom-0 left-0 w-[120px] h-[55px] bg-black" />
+                
+                {/* Bottom-Right Shield: Covers 'More videos' and white YouTube watermark logo */}
+                <div className="absolute bottom-0 right-0 w-[260px] h-[55px] bg-black" />
+              </div>
+
               {/* Permanent Privacy Shield — controlled via DOM ref (zero React async delay). Opacity toggled synchronously inside YouTube's own onStateChange callback. Always mounted so there is never a missing-frame gap. */}
               <div
                 ref={shieldRef}
