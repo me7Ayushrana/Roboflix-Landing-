@@ -1311,12 +1311,10 @@ export default function LmsAdminPanel() {
                   <span>PostgreSQL Schema Script</span>
                   <button
                     onClick={() => {
-                      const sqlText = `-- Drop existing tables to ensure a clean, fresh setup
-drop table if exists public.roboflix_lms_users cascade;
-drop table if exists public.roboflix_lms_settings cascade;
+                      const sqlText = `-- Safe, non-destructive initialization script (does NOT wipe existing tables or data)
 
--- 1. Create Student Subscriptions Table
-create table public.roboflix_lms_users (
+-- 1. Create Student Subscriptions Table safely
+create table if not exists public.roboflix_lms_users (
   id uuid default gen_random_uuid() primary key,
   email text unique not null,
   phone text not null, -- Password
@@ -1325,28 +1323,45 @@ create table public.roboflix_lms_users (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security on Users
+-- Enable Row Level Security on Users safely
 alter table public.roboflix_lms_users enable row level security;
 
--- Create Open Access Policies for simplified public operations on Users
-create policy "Allow public read" on public.roboflix_lms_users for select using (true);
-create policy "Allow public insert" on public.roboflix_lms_users for insert with check (true);
-create policy "Allow public update" on public.roboflix_lms_users for update using (true) with check (true);
-create policy "Allow public delete" on public.roboflix_lms_users for delete using (true);
-
--- 2. Create LMS settings & Widescreen Lecture settings table
-create table public.roboflix_lms_settings (
+-- 2. Create LMS settings & Widescreen Lecture settings table safely
+create table if not exists public.roboflix_lms_settings (
   key text primary key,
   value jsonb not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security on Settings
+-- Enable Row Level Security on Settings safely
 alter table public.roboflix_lms_settings enable row level security;
 
--- Create Open Access Policies for Settings
-create policy "Allow public read settings" on public.roboflix_lms_settings for select using (true);
-create policy "Allow public write settings" on public.roboflix_lms_settings for all using (true) with check (true);`
+-- 3. Create Open Access Policies safely without throwing conflict errors
+do $$
+begin
+  -- Users policies
+  if not exists (select 1 from pg_policies where policyname = 'Allow public read' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public read" on public.roboflix_lms_users for select using (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public insert' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public insert" on public.roboflix_lms_users for insert with check (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public update' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public update" on public.roboflix_lms_users for update using (true) with check (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public delete' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public delete" on public.roboflix_lms_users for delete using (true);
+  end if;
+  
+  -- Settings policies
+  if not exists (select 1 from pg_policies where policyname = 'Allow public read settings' and tablename = 'roboflix_lms_settings') then
+    create policy "Allow public read settings" on public.roboflix_lms_settings for select using (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public write settings' and tablename = 'roboflix_lms_settings') then
+    create policy "Allow public write settings" on public.roboflix_lms_settings for all using (true) with check (true);
+  end if;
+end
+$$;`
                       navigator.clipboard.writeText(sqlText)
                       showToast("SQL Script copied to clipboard! 📋")
                     }}
@@ -1355,12 +1370,11 @@ create policy "Allow public write settings" on public.roboflix_lms_settings for 
                     Copy Script
                   </button>
                 </div>
-                <pre className="p-4 overflow-x-auto text-gray-300 max-h-[220px] overflow-y-auto leading-relaxed select-text font-mono text-left">
-{`drop table if exists public.roboflix_lms_users cascade;
-drop table if exists public.roboflix_lms_settings cascade;
+                <pre className="p-4 overflow-x-auto text-gray-350 max-h-[220px] overflow-y-auto leading-relaxed select-text font-mono text-left">
+{`-- Safe, non-destructive initialization script (does NOT wipe existing tables or data)
 
--- 1. Create Student Subscriptions Table
-create table public.roboflix_lms_users (
+-- 1. Create Student Subscriptions Table safely
+create table if not exists public.roboflix_lms_users (
   id uuid default gen_random_uuid() primary key,
   email text unique not null,
   phone text not null, -- Password
@@ -1369,28 +1383,45 @@ create table public.roboflix_lms_users (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security on Users
+-- Enable Row Level Security on Users safely
 alter table public.roboflix_lms_users enable row level security;
 
--- Create Open Access Policies for simplified public operations on Users
-create policy "Allow public read" on public.roboflix_lms_users for select using (true);
-create policy "Allow public insert" on public.roboflix_lms_users for insert with check (true);
-create policy "Allow public update" on public.roboflix_lms_users for update using (true) with check (true);
-create policy "Allow public delete" on public.roboflix_lms_users for delete using (true);
-
--- 2. Create LMS settings & Widescreen Lecture settings table
-create table public.roboflix_lms_settings (
+-- 2. Create LMS settings & Widescreen Lecture settings table safely
+create table if not exists public.roboflix_lms_settings (
   key text primary key,
   value jsonb not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security on Settings
+-- Enable Row Level Security on Settings safely
 alter table public.roboflix_lms_settings enable row level security;
 
--- Create Open Access Policies for Settings
-create policy "Allow public read settings" on public.roboflix_lms_settings for select using (true);
-create policy "Allow public write settings" on public.roboflix_lms_settings for all using (true) with check (true);`}
+-- 3. Create Open Access Policies safely without throwing conflict errors
+do $$
+begin
+  -- Users policies
+  if not exists (select 1 from pg_policies where policyname = 'Allow public read' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public read" on public.roboflix_lms_users for select using (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public insert' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public insert" on public.roboflix_lms_users for insert with check (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public update' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public update" on public.roboflix_lms_users for update using (true) with check (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public delete' and tablename = 'roboflix_lms_users') then
+    create policy "Allow public delete" on public.roboflix_lms_users for delete using (true);
+  end if;
+  
+  -- Settings policies
+  if not exists (select 1 from pg_policies where policyname = 'Allow public read settings' and tablename = 'roboflix_lms_settings') then
+    create policy "Allow public read settings" on public.roboflix_lms_settings for select using (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'Allow public write settings' and tablename = 'roboflix_lms_settings') then
+    create policy "Allow public write settings" on public.roboflix_lms_settings for all using (true) with check (true);
+  end if;
+end
+$$;`}
                 </pre>
               </div>
 
