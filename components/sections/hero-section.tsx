@@ -379,9 +379,9 @@ export function HeroSection() {
                 alt="ROBOFLIX: Your Robotics Journey"
                 className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="w-20 h-20 rounded-full bg-red-600/90 backdrop-blur-sm flex items-center justify-center shadow-2xl shadow-red-600/50 scale-90 group-hover:scale-100 transition-transform duration-300">
-                  <Play className="w-8 h-8 text-white fill-white ml-1" />
+              <div className="absolute inset-0 bg-black/25 sm:bg-black/35 flex items-center justify-center transition-opacity duration-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-red-600/95 sm:bg-red-600/90 backdrop-blur-sm flex items-center justify-center shadow-2xl shadow-red-600/50 scale-100 sm:scale-90 sm:group-hover:scale-100 transition-transform duration-300">
+                  <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white fill-white ml-1" />
                 </div>
               </div>
             </div>

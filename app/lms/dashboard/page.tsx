@@ -116,12 +116,14 @@ export default function LmsDashboardPage() {
             </span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link
-              href="/lms/admin"
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded text-sm font-semibold transition-colors"
-            >
-              Admin Panel
-            </Link>
+            {user && (user.email.toLowerCase() === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@roboflix.pro").toLowerCase() || user.email.toLowerCase().includes("admin")) && (
+              <Link
+                href="/lms/admin"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded text-sm font-semibold transition-colors"
+              >
+                Admin Panel
+              </Link>
+            )}
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-semibold transition-colors"

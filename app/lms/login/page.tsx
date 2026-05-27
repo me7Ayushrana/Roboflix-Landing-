@@ -70,11 +70,34 @@ export default function LmsLoginPage() {
         // Fallback to static mock credentials list if Supabase env is not configured
         const trimmedEmail = email.trim()
         const trimmedPassword = password.trim()
-        if (VALID_CREDENTIALS[trimmedEmail] === trimmedPassword) {
+
+        // Search dynamic LMS users first
+        let usersList: any[] = []
+        const storedUsers = localStorage.getItem("roboflix_lms_users")
+        if (storedUsers) {
+          try {
+            usersList = JSON.parse(storedUsers)
+          } catch (e) {
+            usersList = []
+          }
+        }
+
+        const matchedUser = usersList.find(
+          u => u.email.toLowerCase() === trimmedEmail.toLowerCase() && u.phone === trimmedPassword
+        )
+
+        if (matchedUser) {
+          if (matchedUser.status === "Active") {
+            localStorage.setItem("lms_user", JSON.stringify({ email: trimmedEmail }))
+            router.push("/lms/dashboard")
+          } else {
+            setError("Your RoboFlix LMS subscription access has been revoked. Contact admin.")
+          }
+        } else if (VALID_CREDENTIALS[trimmedEmail] === trimmedPassword) {
           localStorage.setItem("lms_user", JSON.stringify({ email: trimmedEmail }))
           router.push("/lms/dashboard")
         } else {
-          setError("Invalid email or phone number. (Local Fallback Mode)")
+          setError("Invalid email or password. (Local Fallback Mode)")
         }
       }
     } catch (err: any) {
@@ -118,7 +141,7 @@ export default function LmsLoginPage() {
             </div>
 
             <p className="text-gray-400 text-sm">
-              <span className="text-red-600 font-semibold">Pro tip:</span> Use your registered email and phone number as password.
+              <span className="text-red-600 font-semibold">Pro tip:</span> Use your registered email and your registered phone number as your password.
             </p>
           </div>
         </div>
@@ -146,16 +169,16 @@ export default function LmsLoginPage() {
                   </div>
                 </div>
 
-                {/* Phone Number Field */}
+                {/* Password Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Your phone number"
+                      placeholder="Enter your password"
                       className="w-full pl-10 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-600 transition"
                     />
                   </div>

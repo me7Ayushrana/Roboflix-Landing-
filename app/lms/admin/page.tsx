@@ -22,6 +22,13 @@ interface CodeSnippet {
   snippet: string
 }
 
+interface UserAccess {
+  email: string
+  phone: string
+  status: "Active" | "Revoked"
+  tier: "Pro" | "Founding Batch"
+}
+
 interface Episode {
   id: number
   title: string
@@ -75,24 +82,47 @@ export default function LmsAdminPanel() {
   const [toastMessage, setToastMessage] = useState("")
   const [parsedVideoId, setParsedVideoId] = useState("")
 
+  // Tab Navigation state
+  const [activeTab, setActiveTab] = useState<"course" | "users">("course")
+
+  // Subscription states
+  const [usersList, setUsersList] = useState<UserAccess[]>([])
+  const [newSubEmail, setNewSubEmail] = useState("")
+  const [newSubPassword, setNewSubPassword] = useState("")
+  const [newSubTier, setNewSubTier] = useState<"Pro" | "Founding Batch">("Pro")
+  const [searchQuery, setSearchQuery] = useState("")
+
   // ─── Authentication Check ─────────────────────────────────────
   useEffect(() => {
     const checkSession = async () => {
       try {
+        let loggedInEmail = ""
         if (isSupabaseConfigured()) {
           const { data: { session } } = await supabase.auth.getSession()
           if (session && session.user) {
-            setUser({ email: session.user.email || "" })
-            setIsLoading(false)
-            return
+            loggedInEmail = session.user.email || ""
           }
         }
         
-        // Fallback to local storage if Supabase is not configured or has no active session
-        const storedUser = localStorage.getItem("lms_user")
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
-          setIsLoading(false)
+        if (!loggedInEmail) {
+          const storedUser = localStorage.getItem("lms_user")
+          if (storedUser) {
+            const parsed = JSON.parse(storedUser)
+            loggedInEmail = parsed.email || ""
+          }
+        }
+
+        if (loggedInEmail) {
+          const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@roboflix.pro"
+          const isUserAdmin = loggedInEmail.toLowerCase() === adminEmail.toLowerCase() || loggedInEmail.toLowerCase().includes("admin")
+          
+          if (isUserAdmin) {
+            setUser({ email: loggedInEmail })
+            setIsLoading(false)
+          } else {
+            alert("Access Denied: You are not authorized to view the LMS Admin Panel.")
+            window.location.href = "/lms/dashboard"
+          }
         } else {
           window.location.href = "/lms/login"
         }
@@ -103,6 +133,94 @@ export default function LmsAdminPanel() {
 
     checkSession()
   }, [])
+
+  // ─── Subscriptions Data Load ───────────────────────────────────
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("roboflix_lms_users")
+      if (stored) {
+        try {
+          setUsersList(JSON.parse(stored))
+        } catch (e) {
+          const defaultList = [
+            { email: "hloshishirdwivedi@gmail.com", phone: "6260087052", status: "Active", tier: "Founding Batch" },
+            { email: "rkrohan0718@gmail.com", phone: "8449844821", status: "Active", tier: "Pro" },
+            { email: "sid22prakash@gmail.com", phone: "9074423858", status: "Active", tier: "Pro" },
+            { email: "ansh.ritesh.singh.2010@gmail.com", phone: "9049410576", status: "Active", tier: "Pro" },
+            { email: "jemit57@gmail.com", phone: "437-224-3735", status: "Active", tier: "Founding Batch" },
+            { email: "ishinder@gmail.com", phone: "8288898544", status: "Active", tier: "Pro" },
+          ] as UserAccess[]
+          setUsersList(defaultList)
+          localStorage.setItem("roboflix_lms_users", JSON.stringify(defaultList))
+        }
+      } else {
+        const defaultList = [
+          { email: "hloshishirdwivedi@gmail.com", phone: "6260087052", status: "Active", tier: "Founding Batch" },
+          { email: "rkrohan0718@gmail.com", phone: "8449844821", status: "Active", tier: "Pro" },
+          { email: "sid22prakash@gmail.com", phone: "9074423858", status: "Active", tier: "Pro" },
+          { email: "ansh.ritesh.singh.2010@gmail.com", phone: "9049410576", status: "Active", tier: "Pro" },
+          { email: "jemit57@gmail.com", phone: "437-224-3735", status: "Active", tier: "Founding Batch" },
+          { email: "ishinder@gmail.com", phone: "8288898544", status: "Active", tier: "Pro" },
+        ] as UserAccess[]
+        setUsersList(defaultList)
+        localStorage.setItem("roboflix_lms_users", JSON.stringify(defaultList))
+      }
+    }
+  }, [])
+
+  // ─── Subscription Actions ─────────────────────────────────────
+  const addSubscription = () => {
+    if (!newSubEmail.trim() || !newSubPassword.trim()) {
+      alert("Email and Password are required to grant access.")
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(newSubEmail.trim())) {
+      alert("Please enter a valid email address.")
+      return
+    }
+
+    const exists = usersList.some(u => u.email.toLowerCase() === newSubEmail.trim().toLowerCase())
+    if (exists) {
+      alert("This user email already has an active or revoked access profile.")
+      return
+    }
+
+    const newUser: UserAccess = {
+      email: newSubEmail.trim(),
+      phone: newSubPassword.trim(),
+      status: "Active",
+      tier: newSubTier
+    }
+
+    const updated = [...usersList, newUser]
+    setUsersList(updated)
+    localStorage.setItem("roboflix_lms_users", JSON.stringify(updated))
+    
+    setNewSubEmail("")
+    setNewSubPassword("")
+    showToast(`LMS access granted to ${newUser.email} 🎉`)
+  }
+
+  const toggleSubscriptionStatus = (email: string) => {
+    const updated = usersList.map(u => {
+      if (u.email.toLowerCase() !== email.toLowerCase()) return u
+      const newStatus: "Active" | "Revoked" = u.status === "Active" ? "Revoked" : "Active"
+      return { ...u, status: newStatus }
+    })
+    setUsersList(updated)
+    localStorage.setItem("roboflix_lms_users", JSON.stringify(updated))
+    showToast(`Access status updated for ${email}`)
+  }
+
+  const deleteSubscription = (email: string) => {
+    if (!confirm(`Are you sure you want to completely delete LMS access for ${email}?`)) return
+    const updated = usersList.filter(u => u.email.toLowerCase() !== email.toLowerCase())
+    setUsersList(updated)
+    localStorage.setItem("roboflix_lms_users", JSON.stringify(updated))
+    showToast(`Removed access record for ${email}`)
+  }
 
   // ─── Data Initialization ───────────────────────────────────────
   useEffect(() => {
@@ -330,17 +448,44 @@ export default function LmsAdminPanel() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         
         {/* Top bar description */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-6">
           <div>
             <h1 className="text-3xl font-extrabold text-white flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-red-600 animate-pulse" />
               LMS Course Management
             </h1>
-            <p className="text-gray-400 text-sm mt-1">Directly add, modify, and publish course slides, media resources, codes, and high-fidelity video embeds.</p>
+            <p className="text-gray-400 text-sm mt-1">Directly add, modify, and publish course slides, media resources, codes, and manage user subscription credentials.</p>
+          </div>
+          
+          {/* Tab Navigation */}
+          <div className="flex bg-[#111] border border-gray-800 p-1 rounded-xl shrink-0">
+            <button
+              onClick={() => setActiveTab("course")}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-2 ${
+                activeTab === "course"
+                  ? "bg-red-600 text-white shadow-lg shadow-red-600/10"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Episodes & Content</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-2 ${
+                activeTab === "users"
+                  ? "bg-red-600 text-white shadow-lg shadow-red-600/10"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>User Subscriptions</span>
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {activeTab === "course" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Column: Choose Video, Season, and Episode */}
           <div className="lg:col-span-4 space-y-6">
@@ -721,6 +866,152 @@ export default function LmsAdminPanel() {
           </div>
 
         </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Grant Access Form */}
+            <div className="lg:col-span-4 space-y-6">
+              <div className="border border-white/5 rounded-2xl bg-black/60 backdrop-blur p-6 space-y-6 shadow-2xl">
+                <h2 className="text-lg font-bold text-white border-b border-white/5 pb-3 flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-red-500" />
+                  Grant Student Access
+                </h2>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Student Email</label>
+                  <input
+                    type="email"
+                    value={newSubEmail}
+                    onChange={(e) => setNewSubEmail(e.target.value)}
+                    placeholder="student@example.com"
+                    className="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-red-600 outline-none text-white transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">LMS Password / Phone</label>
+                  <input
+                    type="text"
+                    value={newSubPassword}
+                    onChange={(e) => setNewSubPassword(e.target.value)}
+                    placeholder="Enter phone or password"
+                    className="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-red-600 outline-none text-white transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Access Tier Level</label>
+                  <select
+                    value={newSubTier}
+                    onChange={(e) => setNewSubTier(e.target.value as any)}
+                    className="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-red-600 outline-none text-white transition-colors"
+                  >
+                    <option value="Pro">Pro Membership (Standard)</option>
+                    <option value="Founding Batch">Founding Batch (All seasons)</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={addSubscription}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold uppercase rounded-xl transition-all shadow-lg shadow-red-600/20 active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Grant LMS Access</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Users Subscriptions Directory */}
+            <div className="lg:col-span-8 space-y-6">
+              <div className="border border-white/5 rounded-2xl bg-black/60 backdrop-blur p-6 sm:p-8 space-y-6 shadow-2xl">
+                
+                {/* Header & Search */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-white">Active Subscriptions Directory</h2>
+                    <p className="text-xs text-gray-400 mt-1">Manage and audit student logins, edit access states, or revoke credentials instantly.</p>
+                  </div>
+                  
+                  {/* Search input */}
+                  <div className="relative shrink-0 w-full sm:w-64">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search student email..."
+                      className="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-2.5 text-xs focus:border-red-600 outline-none text-white transition-colors placeholder:text-gray-600"
+                    />
+                  </div>
+                </div>
+
+                {/* Subscriptions List */}
+                <div className="space-y-3">
+                  {usersList.filter(u => u.email.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                    <div className="p-12 border border-dashed border-gray-800 rounded-2xl text-center text-gray-500 italic">
+                      No active student profiles found matching your search.
+                    </div>
+                  ) : (
+                    usersList
+                      .filter(u => u.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((sub, idx) => (
+                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl gap-4 hover:border-white/10 transition-all text-left">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-red-600/10 border border-red-500/20 flex items-center justify-center text-red-500 font-bold shrink-0">
+                              {sub.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-sm text-white truncate">{sub.email}</h3>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <span className="text-[9px] uppercase font-mono bg-black/40 text-gray-500 px-1.5 py-0.5 rounded border border-white/5 shrink-0">
+                                  PW: {sub.phone}
+                                </span>
+                                <span className={`text-[9px] uppercase font-mono px-1.5 py-0.5 rounded shrink-0 ${
+                                  sub.tier === "Founding Batch"
+                                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                                    : "bg-red-500/10 text-red-400 border border-red-500/20"
+                                }`}>
+                                  {sub.tier}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 justify-end shrink-0">
+                            {/* Access Status Badge / Button */}
+                            <button
+                              onClick={() => toggleSubscriptionStatus(sub.email)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-1.5 border ${
+                                sub.status === "Active"
+                                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-500"
+                                  : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-500"
+                              }`}
+                              title={sub.status === "Active" ? "Click to Revoke Access" : "Click to Enable Access"}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                sub.status === "Active" ? "bg-emerald-500 animate-pulse" : "bg-red-500"
+                              }`} />
+                              <span>{sub.status === "Active" ? "Active" : "Revoked"}</span>
+                            </button>
+
+                            {/* Delete User Access completely */}
+                            <button
+                              onClick={() => deleteSubscription(sub.email)}
+                              className="p-2 hover:bg-red-600/10 hover:border-red-500/30 border border-transparent rounded-lg text-gray-500 hover:text-red-500 transition-all"
+                              title="Delete Student Profile"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        )}
 
       </main>
 
