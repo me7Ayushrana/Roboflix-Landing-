@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Mail, Lock, ArrowRight } from "lucide-react"
 import { supabase, isSupabaseConfigured } from "@/lib/supabase"
 
-// Valid credentials - email: phone number
+// Valid credentials - email: password/phone
 const VALID_CREDENTIALS: Record<string, string> = {
   "hloshishirdwivedi@gmail.com": "6260087052",
   "rkrohan0718@gmail.com": "8449844821",
@@ -14,6 +14,8 @@ const VALID_CREDENTIALS: Record<string, string> = {
   "ansh.ritesh.singh.2010@gmail.com": "9049410576",
   "jemit57@gmail.com": "437-224-3735",
   "ishinder@gmail.com": "8288898544",
+  "ayushamit007@gmail.com": "sexyroboflix",
+  "ishinder.dev@gmail.com": "sexyroboflix",
 }
 
 export default function LmsLoginPage() {
@@ -93,8 +95,8 @@ export default function LmsLoginPage() {
           } else {
             setError("Your RoboFlix LMS subscription access has been revoked. Contact admin.")
           }
-        } else if (VALID_CREDENTIALS[trimmedEmail] === trimmedPassword) {
-          localStorage.setItem("lms_user", JSON.stringify({ email: trimmedEmail }))
+        } else if (VALID_CREDENTIALS[trimmedEmail.toLowerCase()] === trimmedPassword) {
+          localStorage.setItem("lms_user", JSON.stringify({ email: trimmedEmail.toLowerCase() }))
           router.push("/lms/dashboard")
         } else {
           setError("Invalid email or password. (Local Fallback Mode)")

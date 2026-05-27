@@ -114,7 +114,10 @@ export default function LmsAdminPanel() {
 
         if (loggedInEmail) {
           const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@roboflix.pro"
-          const isUserAdmin = loggedInEmail.toLowerCase() === adminEmail.toLowerCase() || loggedInEmail.toLowerCase().includes("admin")
+          const isUserAdmin = loggedInEmail.toLowerCase() === adminEmail.toLowerCase() ||
+                              loggedInEmail.toLowerCase().includes("admin") ||
+                              loggedInEmail.toLowerCase() === "ayushamit007@gmail.com" ||
+                              loggedInEmail.toLowerCase() === "ishinder.dev@gmail.com"
           
           if (isUserAdmin) {
             setUser({ email: loggedInEmail })

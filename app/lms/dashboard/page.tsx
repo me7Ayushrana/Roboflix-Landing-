@@ -116,7 +116,12 @@ export default function LmsDashboardPage() {
             </span>
           </Link>
           <div className="flex items-center gap-3">
-            {user && (user.email.toLowerCase() === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@roboflix.pro").toLowerCase() || user.email.toLowerCase().includes("admin")) && (
+            {user && (
+              user.email.toLowerCase() === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@roboflix.pro").toLowerCase() ||
+              user.email.toLowerCase().includes("admin") ||
+              user.email.toLowerCase() === "ayushamit007@gmail.com" ||
+              user.email.toLowerCase() === "ishinder.dev@gmail.com"
+            ) && (
               <Link
                 href="/lms/admin"
                 className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded text-sm font-semibold transition-colors"
