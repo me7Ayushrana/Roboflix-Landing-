@@ -170,11 +170,76 @@ export default function LmsDashboardPage() {
     }
 
     if (typeof window !== "undefined") {
+      const userEmail = user?.email || ""
+      const isAdmin = userEmail.toLowerCase() === "ayushamit007@gmail.com"
+
+      if (isAdmin) {
+        try {
+          let currentAdminPass = "sexyroboflix"
+          
+          // 1. Fetch current password from Supabase
+          if (isSupabaseConfigured()) {
+            try {
+              const { data } = await supabase
+                .from("roboflix_lms_settings")
+                .select("value")
+                .eq("key", "admin_password")
+                .maybeSingle()
+              if (data?.value) {
+                currentAdminPass = data.value as string
+              }
+            } catch (err) {
+              console.error("Failed to load admin password:", err)
+            }
+          }
+
+          // 2. Validate current password
+          if (currentPassword !== currentAdminPass) {
+            setPasswordError("Current password is incorrect.")
+            return
+          }
+
+          // 3. Save new password to Supabase
+          let isSavedInSupabase = false
+          if (isSupabaseConfigured()) {
+            try {
+              const { error } = await supabase
+                .from("roboflix_lms_settings")
+                .upsert([{ key: "admin_password", value: newPassword.trim(), updated_at: new Date().toISOString() }], { onConflict: "key" })
+              
+              if (error) {
+                throw error
+              }
+              isSavedInSupabase = true
+            } catch (err) {
+              console.error("Failed to update admin password in Supabase:", err)
+            }
+          }
+
+          if (isSavedInSupabase) {
+            setPasswordSuccess("Admin password updated successfully globally! 🎉")
+          } else {
+            setPasswordSuccess("Admin password updated locally! (offline) 💻")
+          }
+
+          // Reset inputs and close modal
+          setCurrentPassword("")
+          setNewPassword("")
+          setConfirmPassword("")
+          setTimeout(() => {
+            setShowPasswordModal(false)
+            setPasswordSuccess("")
+          }, 2000)
+        } catch (err) {
+          setPasswordError("Failed to update admin password. Try again.")
+        }
+        return
+      }
+
       const stored = localStorage.getItem("roboflix_lms_users")
       if (stored) {
         try {
           const users = JSON.parse(stored)
-          const userEmail = user?.email || ""
           
           // Find the student in the dynamic database
           const userIdx = users.findIndex((u: any) => u.email.toLowerCase() === userEmail.toLowerCase())
@@ -228,7 +293,7 @@ export default function LmsDashboardPage() {
               setPasswordSuccess("")
             }, 2000)
           } else {
-            setPasswordError("Admin accounts cannot change their password dynamically (locked to static credentials).")
+            setPasswordError("User account not found. Locked to dynamic credentials.")
           }
         } catch (err) {
           setPasswordError("Failed to update password. Try again.")
