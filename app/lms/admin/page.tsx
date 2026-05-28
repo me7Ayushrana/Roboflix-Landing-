@@ -1437,6 +1437,7 @@ create table if not exists public.roboflix_lms_users (
   phone text not null, -- Password
   status text not null default 'Active' check (status in ('Active', 'Revoked')),
   tier text not null default 'Pro' check (tier in ('Pro', 'Founding Batch')),
+  session_id text, -- Concurrency lock
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -1497,6 +1498,7 @@ create table if not exists public.roboflix_lms_users (
   phone text not null, -- Password
   status text not null default 'Active' check (status in ('Active', 'Revoked')),
   tier text not null default 'Pro' check (tier in ('Pro', 'Founding Batch')),
+  session_id text, -- Concurrency lock
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

@@ -38,6 +38,19 @@ export default function LmsLoginPage() {
     }
   }, [])
 
+  // Parse session concurrency or revocation errors on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const errParam = params.get("error")
+      if (errParam === "session_expired") {
+        setError("Your account has been logged out because it was logged in on another device. 🖥️")
+      } else if (errParam === "access_denied") {
+        setError("Access Denied: Your subscription has been revoked or has expired. 🔒")
+      }
+    }
+  }, [])
+
   // Countdown timer to June 15, 2026
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -73,6 +86,8 @@ export default function LmsLoginPage() {
 
       const isAdminEmail = trimmedEmail === ADMIN_EMAIL
 
+      const sessionId = Math.random().toString(36).substring(2) + Date.now().toString()
+
       if (isAdminEmail) {
         // Load admin password from Supabase if configured, else use default
         let adminPassword = DEFAULT_ADMIN_PASSWORD
@@ -88,7 +103,18 @@ export default function LmsLoginPage() {
         }
 
         if (trimmedPassword === adminPassword) {
+          // Track admin session token to enforce single-session control
+          if (isSupabaseConfigured()) {
+            try {
+              await supabase
+                .from("roboflix_lms_settings")
+                .upsert([{ key: "admin_session_id", value: sessionId, updated_at: new Date().toISOString() }], { onConflict: "key" })
+            } catch (e) {
+              console.error("Failed to write admin session ID:", e)
+            }
+          }
           localStorage.setItem("lms_user", JSON.stringify({ email: trimmedEmail }))
+          localStorage.setItem("lms_session_id", sessionId)
           router.push("/lms/dashboard")
         } else {
           setError("Invalid administrator password.")
@@ -139,8 +165,19 @@ export default function LmsLoginPage() {
           if (studentRecord.status === "Revoked") {
             setError("Your RoboFlix LMS subscription access has been revoked. Contact admin.")
           } else if (studentRecord.phone === trimmedPassword && studentRecord.status === "Active") {
-            // Success: Log in with dynamic profile password (phone number)
+            // Track student session token to enforce single-session control
+            if (isSupabaseConfigured()) {
+              try {
+                await supabase
+                  .from("roboflix_lms_users")
+                  .update({ session_id: sessionId })
+                  .eq("email", trimmedEmail)
+              } catch (e) {
+                console.error("Failed to write student session ID:", e)
+              }
+            }
             localStorage.setItem("lms_user", JSON.stringify({ email: trimmedEmail }))
+            localStorage.setItem("lms_session_id", sessionId)
             router.push("/lms/dashboard")
           } else {
             setError("Invalid password.")
