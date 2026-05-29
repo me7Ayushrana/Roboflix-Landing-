@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Menu, X, MessageCircle, Play, Pause, RotateCcw, RotateCw, Volume2, VolumeX, Maximize, Minimize, Gauge, Settings, ExternalLink } from "lucide-react"
+import { ArrowLeft, Menu, X, MessageCircle, Play, Pause, RotateCcw, RotateCw, Volume2, VolumeX, Maximize, Minimize, Gauge, Settings, ExternalLink, Code } from "lucide-react"
 import { SEASONS_DATA } from "@/lib/lms-data"
 import { supabase, isSupabaseConfigured } from "@/lib/supabase"
 
@@ -1121,15 +1121,28 @@ export default function VideoPlayerPage() {
             <p className="text-red-500 font-semibold text-sm uppercase tracking-wider mb-4">{season.title}</p>
             <p className="text-gray-400 text-sm sm:text-base mb-6">{episode.duration}</p>
 
-            {/* Ask Doubt Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              onClick={() => setShowDoubtForm(!showDoubtForm)}
-              className="mb-6 flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors"
-            >
-              <MessageCircle className="w-5 h-5" />
-              Ask Doubt on WhatsApp
-            </motion.button>
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              {/* Ask Doubt Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={() => setShowDoubtForm(!showDoubtForm)}
+                className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors text-white"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Ask Doubt on WhatsApp
+              </motion.button>
+
+              {/* Open Virtual Lab Button */}
+              <Link href={`/lms/lab/s${seasonId}e${episodeId}`}>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-semibold text-white transition-colors cursor-pointer"
+                >
+                  <Code className="w-5 h-5 text-red-500" />
+                  Open Virtual Lab
+                </motion.button>
+              </Link>
+            </div>
 
             {/* Doubt Form */}
             {showDoubtForm && (
