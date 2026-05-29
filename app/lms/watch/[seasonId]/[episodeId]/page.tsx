@@ -1133,7 +1133,7 @@ export default function VideoPlayerPage() {
               </motion.button>
 
               {/* Open Virtual Lab Button */}
-              <Link href={`/lms/lab/s${seasonId}e${episodeId}`}>
+              <Link href={`/lms/lab/s${seasonId}e${episodeId}`} target="_blank" rel="noopener noreferrer">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-semibold text-white transition-colors cursor-pointer"

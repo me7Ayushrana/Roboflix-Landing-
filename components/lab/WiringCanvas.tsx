@@ -424,13 +424,21 @@ export default function WiringCanvas({
                 </div>
 
                 {/* SVG/HTML Body preview block */}
-                <div className="flex-1 flex items-center justify-center relative">
-                  <div
-                    style={{ backgroundColor: def.color + "1a", borderColor: def.color + "44" }}
-                    className="w-full h-full rounded border border-dashed flex items-center justify-center text-[9px] uppercase tracking-widest font-mono text-gray-500"
-                  >
-                    {def.id.slice(0, 8)}
-                  </div>
+                <div className="flex-1 flex items-center justify-center relative overflow-hidden rounded-lg">
+                  {def.imageUrl ? (
+                    <img
+                      src={def.imageUrl}
+                      alt={def.name}
+                      className="w-full h-full object-contain p-1 select-none pointer-events-none"
+                    />
+                  ) : (
+                    <div
+                      style={{ backgroundColor: def.color + "1a", borderColor: def.color + "44" }}
+                      className="w-full h-full rounded border border-dashed flex items-center justify-center text-[9px] uppercase tracking-widest font-mono text-gray-500"
+                    >
+                      {def.id.slice(0, 8)}
+                    </div>
+                  )}
                 </div>
 
                 {/* Render Connective Pins */}

@@ -44,6 +44,11 @@ export default function VirtualLabPage() {
   const [xpAwarded, setXpAwarded] = useState(0)
   const [simulationHint, setSimulationHint] = useState<string | undefined>(undefined)
 
+  // Uploading state
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadStepText, setUploadStepText] = useState("")
+
   // 1. Session Protection and Access Control
   useEffect(() => {
     const checkSession = () => {
@@ -142,6 +147,38 @@ export default function VirtualLabPage() {
   // Drag start from palette
   const handleDragStart = (e: React.DragEvent, componentId: string) => {
     e.dataTransfer.setData("text/plain", componentId)
+  }
+
+  // 3b. Upload Code Flashing HUD Simulation
+  const handleUploadCode = () => {
+    if (!config) return
+    setIsUploading(true)
+    setUploadProgress(0)
+    setUploadStepText("Checking syntax rules & compiling compiler variables...")
+    setPassed(null)
+    setSimulationHint(undefined)
+
+    const steps = [
+      { progress: 15, text: "Compiling code sketch.ino.cpp using avr-g++ compiler..." },
+      { progress: 35, text: "Scanning USB serial ports for active microcontrollers..." },
+      { progress: 55, text: "Found board on Virtual COM3. Initiating flash upload..." },
+      { progress: 75, text: "Writing memory pages: 42% [====          ]" },
+      { progress: 90, text: "Writing memory pages: 100% [==========]" },
+      { progress: 100, text: "Flash write verification successful! Board resetting..." }
+    ]
+
+    let stepIdx = 0
+    const interval = setInterval(() => {
+      if (stepIdx < steps.length) {
+        setUploadProgress(steps[stepIdx].progress)
+        setUploadStepText(steps[stepIdx].text)
+        stepIdx++
+      } else {
+        clearInterval(interval)
+        setIsUploading(false)
+        handleRunSimulation()
+      }
+    }, 450)
   }
 
   // 4. Run Client-Side Simulation & grading
@@ -283,6 +320,7 @@ export default function VirtualLabPage() {
             logs={logs}
             isSimulating={isSimulating}
             onRun={handleRunSimulation}
+            onUpload={handleUploadCode}
             onClear={handleClearLogs}
             passed={passed}
             xpAwarded={xpAwarded}
@@ -290,6 +328,48 @@ export default function VirtualLabPage() {
           />
         </div>
       </div>
+
+      {/* Code Uploading Progress HUD Overlay */}
+      <AnimatePresence>
+        {isUploading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center select-none"
+          >
+            <div className="max-w-md w-full mx-4 p-8 bg-gray-900/90 border border-red-650/40 rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.95)] text-center space-y-6">
+              <div className="w-16 h-16 bg-red-600/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto text-red-500 animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                <Cpu className="w-8 h-8" />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-white font-sans uppercase tracking-wider">
+                  Uploading Sketch to Board
+                </h3>
+                <p className="text-[11px] font-mono text-gray-400 h-10 flex items-center justify-center leading-relaxed">
+                  {uploadStepText}
+                </p>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden border border-white/5 p-0.5">
+                  <motion.div
+                    style={{ width: `${uploadProgress}%` }}
+                    className="h-full bg-red-600 rounded-full shadow-[0_0_8px_#E50914]"
+                    transition={{ ease: "easeInOut" }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] font-mono text-gray-500 font-bold">
+                  <span>Virtual COM3</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

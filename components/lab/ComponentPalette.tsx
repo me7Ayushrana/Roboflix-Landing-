@@ -115,8 +115,12 @@ export default function ComponentPalette({ config, onDragStart }: ComponentPalet
                       className="p-3 bg-gray-900 border border-red-950 hover:border-red-600/40 rounded-xl transition-all cursor-grab active:cursor-grabbing flex items-center gap-3.5 group hover:bg-red-950/5 relative overflow-hidden text-left"
                     >
                       <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-red-600" />
-                      <div className="w-9 h-9 bg-red-600/10 border border-red-500/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 transition-colors">
-                        {item.icon}
+                      <div className="w-9 h-9 bg-red-600/10 border border-red-500/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 transition-colors overflow-hidden">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-0.5" />
+                        ) : (
+                          item.icon
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-semibold text-white group-hover:text-red-400 transition-colors truncate">
@@ -151,8 +155,12 @@ export default function ComponentPalette({ config, onDragStart }: ComponentPalet
                       onDragStart={(e) => onDragStart(e, item.id)}
                       className="p-3 bg-gray-950/60 border border-gray-900 hover:border-gray-800 rounded-xl transition-all cursor-grab active:cursor-grabbing flex items-center gap-3 group hover:bg-white/5 relative overflow-hidden opacity-75 hover:opacity-100 text-left"
                     >
-                      <div className="w-9 h-9 bg-white/5 border border-white/5 rounded-lg flex items-center justify-center text-lg flex-shrink-0 transition-colors">
-                        {item.icon}
+                      <div className="w-9 h-9 bg-white/5 border border-white/5 rounded-lg flex items-center justify-center text-lg flex-shrink-0 transition-colors overflow-hidden">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-0.5" />
+                        ) : (
+                          item.icon
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors truncate">

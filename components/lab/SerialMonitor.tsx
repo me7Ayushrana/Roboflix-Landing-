@@ -1,11 +1,12 @@
 "use client"
 
-import { Play, RotateCcw, Trash2, Award, AlertCircle } from "lucide-react"
+import { Play, RotateCcw, Trash2, Award, AlertCircle, Cpu } from "lucide-react"
 
 interface SerialMonitorProps {
   logs: string[]
   isSimulating: boolean
   onRun: () => void
+  onUpload: () => void
   onClear: () => void
   passed: boolean | null
   xpAwarded: number
@@ -16,6 +17,7 @@ export default function SerialMonitor({
   logs,
   isSimulating,
   onRun,
+  onUpload,
   onClear,
   passed,
   xpAwarded,
@@ -44,10 +46,20 @@ export default function SerialMonitor({
           <button
             onClick={onRun}
             disabled={isSimulating}
-            className="flex items-center gap-1.5 px-3 py-1 bg-red-650 hover:bg-red-600 disabled:opacity-50 text-xs font-bold text-white rounded-lg transition-all shadow-lg shadow-red-600/10 cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 text-[10px] font-bold text-gray-300 hover:text-white rounded transition-all cursor-pointer"
+            title="Verify & Compile Code"
           >
-            <Play className={`w-3 h-3 ${isSimulating ? "animate-spin" : ""}`} />
-            {isSimulating ? "Running..." : "Run"}
+            Verify
+          </button>
+
+          <button
+            onClick={onUpload}
+            disabled={isSimulating}
+            className="flex items-center gap-1 px-2.5 py-1 bg-red-650 hover:bg-red-600 disabled:opacity-50 text-[10px] font-bold text-white rounded transition-all shadow-lg shadow-red-600/10 cursor-pointer"
+            title="Compile & Upload Code to Board"
+          >
+            <Cpu className="w-3 h-3" />
+            Upload
           </button>
         </div>
       </div>
