@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ZoomIn, ZoomOut, RotateCcw, Trash2, Sliders, Cpu, Play, Pause } from "lucide-react"
+import { ZoomIn, ZoomOut, RotateCcw, Trash2, Sliders, Cpu, Play, Pause, Undo } from "lucide-react"
 import { LAB_COMPONENTS } from "@/lib/lab/experimentConfigs"
 import { PlacedComponent, WireConnection } from "@/lib/lab/simulationEngine"
 
@@ -38,6 +38,31 @@ export default function WiringCanvas({
 
   const canvasRef = useRef<HTMLDivElement>(null)
   const dragOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+
+  // Undo history stack for wire connections
+  const [connectionsHistory, setConnectionsHistory] = useState<WireConnection[][]>([])
+
+  // Mouse scroll wheel & trackpad pinch-to-zoom event listener
+  useEffect(() => {
+    const canvasDiv = canvasRef.current
+    if (!canvasDiv) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const delta = e.deltaY < 0 ? 0.05 : -0.05
+      setZoom(prev => Math.min(1.5, Math.max(0.6, prev + delta)))
+    }
+
+    canvasDiv.addEventListener("wheel", handleWheel, { passive: false })
+    return () => canvasDiv.removeEventListener("wheel", handleWheel)
+  }, [])
+
+  const handleUndo = () => {
+    if (connectionsHistory.length === 0) return
+    const prev = connectionsHistory[connectionsHistory.length - 1]
+    setConnectionsHistory(hist => hist.slice(0, -1))
+    onUpdateConnections(prev)
+  }
 
   // Snaps coordinate to a 10px grid
   const snapToGrid = (val: number): number => {
@@ -185,6 +210,7 @@ export default function WiringCanvas({
           toPinId: pinId,
           color: activeWireColor
         }
+        setConnectionsHistory(prev => [...prev, connections])
         onUpdateConnections([...connections, newWire])
       }
       setWireStart(null)
@@ -193,6 +219,7 @@ export default function WiringCanvas({
 
   // Clear Canvas
   const handleClearCanvas = () => {
+    setConnectionsHistory(prev => [...prev, connections])
     onUpdateComponents([])
     onUpdateConnections([])
     setWireStart(null)
@@ -211,6 +238,7 @@ export default function WiringCanvas({
   }
 
   const handleDeleteComponent = (compId: string) => {
+    setConnectionsHistory(prev => [...prev, connections])
     onUpdateComponents(placedComponents.filter(c => c.id !== compId))
     onUpdateConnections(connections.filter(conn => 
       conn.fromComponentId !== compId && conn.toComponentId !== compId
@@ -289,6 +317,15 @@ export default function WiringCanvas({
             title="Reset Zoom"
           >
             <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={handleUndo}
+            disabled={connectionsHistory.length === 0}
+            className="p-1.5 bg-[#141414] hover:bg-white/5 border border-gray-800 disabled:opacity-30 rounded-lg text-gray-400 hover:text-white transition cursor-pointer"
+            title="Undo Last Connection"
+          >
+            <Undo className="w-3.5 h-3.5" />
           </button>
 
           <button
