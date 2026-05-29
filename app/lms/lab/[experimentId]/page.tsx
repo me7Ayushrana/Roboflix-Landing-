@@ -305,6 +305,11 @@ export default function VirtualLabPage() {
           connections={connections}
           onUpdateComponents={handleUpdateComponents}
           onUpdateConnections={handleUpdateConnections}
+          isSimulating={isSimulating}
+          onRun={handleRunSimulation}
+          onUpload={handleUploadCode}
+          onClear={handleClearLogs}
+          passed={passed}
         />
 
         {/* Panel 3: Code Editor & Serial monitor vertical split */}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ZoomIn, ZoomOut, RotateCcw, Trash2, Sliders } from "lucide-react"
+import { ZoomIn, ZoomOut, RotateCcw, Trash2, Sliders, Cpu, Play, Pause } from "lucide-react"
 import { LAB_COMPONENTS } from "@/lib/lab/experimentConfigs"
 import { PlacedComponent, WireConnection } from "@/lib/lab/simulationEngine"
 
@@ -10,13 +10,23 @@ interface WiringCanvasProps {
   connections: WireConnection[]
   onUpdateComponents: (comps: PlacedComponent[]) => void
   onUpdateConnections: (conns: WireConnection[]) => void
+  isSimulating?: boolean
+  onRun?: () => void
+  onUpload?: () => void
+  onClear?: () => void
+  passed?: boolean | null
 }
 
 export default function WiringCanvas({
   placedComponents,
   connections,
   onUpdateComponents,
-  onUpdateConnections
+  onUpdateConnections,
+  isSimulating,
+  onRun,
+  onUpload,
+  onClear,
+  passed
 }: WiringCanvasProps) {
   const [zoom, setZoom] = useState(1.0)
   const [activeWireColor, setActiveWireColor] = useState<string>("red")
@@ -458,6 +468,7 @@ export default function WiringCanvas({
                       src={def.imageUrl}
                       alt={def.name}
                       className="w-full h-full object-contain select-none pointer-events-none"
+                      style={{ mixBlendMode: "screen" }}
                     />
                   </div>
 
@@ -564,6 +575,50 @@ export default function WiringCanvas({
             )
           })}
         </div>
+
+        {/* Floating Simulation Control Deck */}
+        {onUpload && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0c0c0cd8] border border-red-500/20 shadow-[0_15px_50px_rgba(0,0,0,0.85)] backdrop-blur-md px-6 py-3 rounded-full flex items-center gap-5 transition-all hover:border-red-500/40 select-none">
+            <div className="flex items-center gap-2 pr-3 border-r border-gray-800">
+              <span className={`w-2.5 h-2.5 rounded-full ${isSimulating ? "bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" : passed ? "bg-green-500 shadow-[0_0_8px_#22c55e]" : passed === false ? "bg-red-500 shadow-[0_0_8px_#ef4444]" : "bg-yellow-500 animate-pulse shadow-[0_0_8px_#eab308]"} transition-all`} />
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-gray-400">
+                {isSimulating ? "SIMULATION RUNNING" : passed ? "PASSED" : passed === false ? "FAILED" : "STANDBY"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Verify/Compile Button */}
+              <button
+                onClick={onRun}
+                disabled={isSimulating}
+                className="flex items-center justify-center gap-1.5 px-4 py-1.5 bg-white/5 hover:bg-white/10 disabled:opacity-50 border border-white/10 rounded-full text-xs font-bold text-gray-300 hover:text-white transition-all cursor-pointer"
+                title="Verify & Compile Code Sketch"
+              >
+                Verify
+              </button>
+
+              {/* Upload & Play Button */}
+              <button
+                onClick={onUpload}
+                disabled={isSimulating}
+                className="flex items-center justify-center gap-1.5 px-5 py-1.5 bg-red-650 hover:bg-red-600 disabled:opacity-50 text-xs font-bold text-white rounded-full transition-all shadow-lg shadow-red-600/20 cursor-pointer"
+                title="Flash Sketch to Board & Start Loop"
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                Upload & Run
+              </button>
+
+              {/* Clear Board Reset Button */}
+              <button
+                onClick={onClear}
+                className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-gray-400 hover:text-white transition cursor-pointer"
+                title="Reset Simulated State"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
